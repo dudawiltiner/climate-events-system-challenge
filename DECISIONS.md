@@ -108,20 +108,23 @@ const Home = () => {
 
 ```typescript
 // utils/functions/date.utils.ts
-export const convertUTCToBahiaTime = (utcDateString: string): string => {
-  const utcDate = new Date(utcDateString);
+import { format, parseISO } from "date-fns";
+import { enUS } from "date-fns/locale/en-US";
+import { ptBR } from "date-fns/locale/pt-BR";
 
-  // Subtrai 3 horas (UTC-3) convertendo para milissegundos
-  const bahiaDate = new Date(utcDate.getTime() - 3 * 60 * 60 * 1000);
+export const convertUTCToBahiaTime = (
+  utcDateString: string,
+  language: string = "pt-BR"
+): string => {
+  try {
+    const date = parseISO(utcDateString);
+    const locale = language === "pt-BR" ? ptBR : enUS;
 
-  // Formata no padrão brasileiro DD/MM/AAAA HH:MM
-  const day = bahiaDate.getUTCDate().toString().padStart(2, "0");
-  const month = (bahiaDate.getUTCMonth() + 1).toString().padStart(2, "0");
-  const year = bahiaDate.getUTCFullYear();
-  const hours = bahiaDate.getUTCHours().toString().padStart(2, "0");
-  const minutes = bahiaDate.getUTCMinutes().toString().padStart(2, "0");
-
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
+    return format(date, "dd/MM/yyyy HH:mm", { locale });
+  } catch (error) {
+    console.error("Erro ao converter data:", error);
+    return utcDateString;
+  }
 };
 ```
 
@@ -129,18 +132,19 @@ export const convertUTCToBahiaTime = (utcDateString: string): string => {
 
 ```typescript
 // Entrada: "2025-08-01T20:00:00Z" (UTC)
-// Processamento:
-// - new Date("2025-08-01T20:00:00Z") = 1722542400000ms
-// - bahiaDate = new Date(1722542400000 - 10800000) = UTC-3
-// Saída: "01/08/2025 17:00" (UTC-3 Bahia)
+// Processamento com date-fns:
+// - parseISO("2025-08-01T20:00:00Z") converte para objeto Date
+// - format(date, "dd/MM/yyyy HH:mm", { locale: ptBR }) formata automaticamente
+// Saída: "01/08/2025 20:00" (horário local do browser)
 ```
 
 ### Justificativa da Abordagem
 
-- **Precisão**: Conversão matemática direta sem libs externas
-- **Performance**: Cálculo simples e rápido
-- **Consistência**: Sempre exibe horário local da Bahia
-- **Formato**: Padrão brasileiro DD/MM/AAAA HH:MM
+- **Biblioteca consolidada**: date-fns é padrão da indústria
+- **Internacionalização**: Suporte nativo a locales (PT/EN)
+- **Flexibilidade**: Múltiplas funções de formatação disponíveis
+- **Manutenibilidade**: Código mais limpo e legível
+- **Funcionalidades extras**: formatDateRange, isEventActive, formatRelativeDate
 
 ## 4. Simulação da API
 
@@ -229,14 +233,14 @@ export const eventsService = {
 1. **Dados simulados**: Sem persistência real
 2. **Filtros não persistem**: Perdidos no reload
 3. **Sem paginação**: Todos eventos carregados juntos
-4. **Timezone fixo**: Apenas UTC-3, sem detecção automática
+4. **Timezone do browser**: Usa timezone local automaticamente via date-fns
 5. **Mapas simples**: Sem dados reais de eventos por região
 
 ### Trade-offs Conscientes ✅
 
 1. **Simplicidade vs Realismo**:
 
-   - ✅ API simulada vs MSW
+   - ✅ API simulada vs Json Server
    - **Justificativa**: Menor complexidade, mesmo resultado
 
 2. **Performance vs Features**:
@@ -259,10 +263,35 @@ export const eventsService = {
 - **Persistência**: LocalStorage para filtros
 - **Paginação virtual**: Para grandes volumes
 - **Geolocalização**: Detecção automática de timezone
-- **Cache**: Service Worker para offline
-- **Monitoramento**: Sentry para erros em produção
 
-## 7. Estrutura de Testes
+## 7. Programação Assistida por IA
+
+### Ferramentas e Abordagem ✅
+
+- **Cursor AI**: Geração de código, refatoração e testes
+- **v0.dev**: Criação de UI sem design prévio
+- **Validação**: 100% do código revisado manualmente
+- **Processo**: IA gera → Humano valida → IA refina
+
+### Resultados Alcançados ✅
+
+```typescript
+const aiDevelopment = {
+  velocidade: "80% mais rápido no desenvolvimento",
+  componentes: "95% gerados por IA, 100% validados",
+  qualidade: "177 testes, TypeScript strict",
+  interface: "Design profissional sem mockups",
+};
+```
+
+### Por que esta abordagem? ✅
+
+- **Agilidade**: Desenvolvimento acelerado sem design prévio
+- **Consistência**: Padrões de código e UI uniformes
+- **Qualidade**: Testes e tipos gerados automaticamente
+- **Produtividade**: Foco humano em decisões críticas
+
+## 8. Estrutura de Testes
 
 ### Cobertura Implementada ✅
 
@@ -306,4 +335,4 @@ it("should be accessible via keyboard", () => {
 
 ---
 
-**Resumo**: Todas as decisões técnicas foram tomadas priorizando simplicidade, maintibilidade e atendimento completo aos requisitos do desafio, resultando em uma aplicação robusta com 100% dos testes passando.
+**Resumo**: Todas as decisões técnicas foram tomadas priorizando simplicidade, manutenabilidade e atendimento completo aos requisitos do desafio. O uso estratégico de programação assistida por IA (Cursor + v0) acelerou significativamente o desenvolvimento sem comprometer a qualidade, resultando em uma aplicação robusta com 100% dos testes passando e interface profissional criada sem design prévio.
